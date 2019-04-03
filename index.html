@@ -1,4 +1,19 @@
 <!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>WorkingAPI</title>
+  
+  
+  
+  
+  
+</head>
+
+<body>
+
+  <!DOCTYPE html>
 <html>
 
 <head>
@@ -14,10 +29,6 @@
       height: 100%;
       width: 100%;
     }
-
-    .esri-editor .esri-item-list__scroller {
-      max-height: 350px;
-    }
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.11/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.11/"></script>
@@ -27,9 +38,12 @@
       "esri/views/MapView",
       "esri/layers/GraphicsLayer",
       "esri/widgets/Sketch",
-      "esri/layers/Layer",
-      "esri/widgets/Search"
-    ], function(Map, MapView, GraphicsLayer, Sketch, Layer, Search) {
+      "esri/layers/FeatureLayer",
+      "esri/widgets/Search",
+      "esri/widgets/LayerList",
+      "esri/tasks/QueryTask",
+      "esri/tasks/support/Query"
+    ], function(Map, MapView, GraphicsLayer, Sketch, FeatureLayer, Search, LayerList, QueryTask, Query) {
       const layer = new GraphicsLayer();
       var map = new Map({
         basemap: "satellite",
@@ -41,20 +55,29 @@
         center: [-100.71511, 35.09042],
         zoom: 4
       });
+      
+      var buildprint = new FeatureLayer({
+       
+    url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/MSBFP2/FeatureServer"
+       
+     });
+      
+     map.add(buildprint);
+                
+          view.when(function() {
+          var layerList = new LayerList({
+            view: view
+          });
+
+          // Add widget to the top right corner of the view
+          view.ui.add(layerList, "top-right");
+        });
       // Creates a layer from a Portal layer item id
       const sketch = new Sketch({
         layer: layer,
         view: view
       });
       view.ui.add(sketch, "top-right");
-      Layer.fromPortalItem({
-        portalItem: {
-          id: "bb69f10baf334d4c935a0fb23d758f38"
-        }
-      }).then(function(layer) {
-        // Adds layer to the map
-        map.add(layer);
-      });
       var searchWidget = new Search({
         view: view
       });
@@ -62,12 +85,19 @@
       view.ui.add(searchWidget, {
         position: "top-right"
       });
+      
     });
   </script>
 </head>
 
 <body>
   <div id="viewDiv"></div>
+</body>
+
+</html>
+  
+  
+
 </body>
 
 </html>
