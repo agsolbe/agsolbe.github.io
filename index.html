@@ -41,15 +41,13 @@
         center: [-100.71511, 35.09042],
         zoom: 4
       });
-      
+
       var buildprint = new FeatureLayer({
        
     url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/MSBFP2/FeatureServer",
     definitionExpression: "StateAbbrev like 'FL'"
      });
-      
-     map.add(buildprint);
-                
+          map.add(buildprint);        
           view.when(function() {
           var layerList = new LayerList({
             view: view
@@ -71,57 +69,20 @@
       view.ui.add(searchWidget, {
         position: "top-right"
       });
+  
+      var countbuildings = {
+        onStatisticField: "StateAbbrev",
+        outStatisticFieldName: "buicou",
+        statisticType: "count"
+      };
       
-	       //*** ADD ***//
-  // Define query SQL expression
-  var query = new Query();
-  query.where = "LEVEL1_LANDUSE_CODE = '1000'";
-  query.outFields = ["*"];
-  query.returnGeometry = true;
-
-  // Define the query task
-  var queryTask = new QueryTask({
-    url: "https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/STATEWIDE_LU_2004_2013/MapServer/3"
-  });
-
-  // Execute the query
-  queryTask.execute(query)
-    .then(function(result){
-      console.log(result.features.length)
-    })
-    .otherwise(function(e){
-      console.log(e);
-    });
-    
-     // Execute the query
-  queryTask.execute(query)
-    .then(function(result){
-      //console.log(result.features.length)
-
-      //*** ADD ***//
-      result.features.forEach(function(item){
-         var g = new Graphic({
-           geometry: item.geometry,
-           attributes: item.attributes,
-           symbol: {
-             type: "simple-fill",
-             color: "red",
-             style: "solid"
-           },
-           popupTemplate: {
-             title: "{LEVEL1_LANDUSE_CODE}",
-             content: "{*}"  // All of the fields
-           }
-         });
-         view.graphics.add(g);
+      var query = buildprint.createQuery();
+      query.outStatistics = [countbuildings];
+      buildprint.queryFeatures(query)
+       .then(function(response){
+        var stats = response.features[0].attributes;
+        console.log(stats);
       });
-
-     })
-
-    .otherwise(function(e){
-      console.log(e);
-    });
-	  
     });
   </script>
 </head>
