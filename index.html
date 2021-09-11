@@ -1,10 +1,9 @@
-<!DOCTYPE html>
 <html>
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ArcGIS JavaScript Tutorials: Create a JavaScript starter app</title>
+  <title>Sea Level Rise</title>
   <style>
     html,
     body,
@@ -19,6 +18,8 @@
   <script src="https://js.arcgis.com/4.11/"></script>
   <script>
     require([
+      "esri/geometry/SpatialReference",
+      "esri/config",
       "esri/Map",
       "esri/views/MapView",
       "esri/layers/GraphicsLayer",
@@ -27,27 +28,55 @@
       "esri/widgets/Search",
       "esri/widgets/LayerList",
       "esri/tasks/QueryTask",
-      "esri/tasks/support/Query",
-	  "esri/Graphic"
-    ], function(Map, MapView, GraphicsLayer, Sketch, FeatureLayer, Search, LayerList, QueryTask, Query, Graphic) {
-      const layer = new GraphicsLayer();
+      "esri/tasks/support/Query"
+    ], function(SpatialReference, esriConfig, Map, MapView, GraphicsLayer, Sketch, FeatureLayer, Search, LayerList, QueryTask, Query) {
+      
+            esriConfig.apiKey = "";
+      
+            var buildprint = new FeatureLayer({
+       
+    url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/MSBFP2/FeatureServer",
+         popupTemplate: {
+            title: "{StateAbbrev}",
+            lastEditInfoEnabled: false,
+            actions: [
+              {
+                title: "Building                             Footprint"
+              }
+            ],
+            content: [
+              {
+                type: "fields",
+                fieldInfos: [
+                  {
+                    fieldName:                             "StateAbbrev"
+                  }
+                ]
+              }
+            ]
+          }
+     });
+    
+  var sealevel = new FeatureLayer({
+          url: "https://services7.arcgis.com/K8NOoiRRwO5bmCMe/arcgis/rest/services/sealevel10ft/FeatureServer"
+     });
+      
       var map = new Map({
         basemap: "satellite",
-        layers: [layer]
+        layers: [buildprint, sealevel]
       });
       var view = new MapView({
         container: "viewDiv",
         map: map,
         center: [-100.71511, 35.09042],
-        zoom: 4
+        zoom: 4,
+        SpatialReference:
+        {wkid: 6350}
       });
-
-      var buildprint = new FeatureLayer({
-       
-    url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/MSBFP2/FeatureServer",
-    definitionExpression: "StateAbbrev like 'FL'"
-     });
-          map.add(buildprint);        
+      
+  
+     map.add(buildprint);
+                
           view.when(function() {
           var layerList = new LayerList({
             view: view
@@ -56,12 +85,7 @@
           // Add widget to the top right corner of the view
           view.ui.add(layerList, "top-right");
         });
-      // Creates a layer from a Portal layer item id
-      const sketch = new Sketch({
-        layer: layer,
-        view: view
-      });
-      view.ui.add(sketch, "top-right");
+
       var searchWidget = new Search({
         view: view
       });
@@ -69,20 +93,7 @@
       view.ui.add(searchWidget, {
         position: "top-right"
       });
-  
-      var countbuildings = {
-        onStatisticField: "StateAbbrev",
-        outStatisticFieldName: "buicou",
-        statisticType: "count"
-      };
       
-      var query = buildprint.createQuery();
-      query.outStatistics = [countbuildings];
-      buildprint.queryFeatures(query)
-       .then(function(response){
-        var stats = response.features[0].attributes;
-        console.log(stats);
-      });
     });
   </script>
 </head>
